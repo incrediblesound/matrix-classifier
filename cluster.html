@@ -5,6 +5,47 @@
 	<script type="text/javascript" src="clusters.js"></script>
 </head>
 <body>
+<script type="text/javascript">
 
+	var A = [
+	[0,0,1,0,0],
+	[0,1,0,1,0],
+	[1,1,1,1,1],
+	[1,0,0,0,1],
+	[1,0,0,0,1]
+	];
+
+	var B = [
+	[1,0,0,0,0],
+	[0,0,1,0,0],
+	[1,0,0,0,0],
+	[0,0,1,0,0],
+	[1,0,0,0,0]
+	];
+
+	var A2 = [
+	[0,0,1,0,0],
+	[1,0,0,0,1],
+	[1,1,1,1,1],
+	[1,0,0,0,1],
+	[1,0,0,0,1]
+	];
+
+	var B2 = [
+	[1,1,0,0,0],
+	[0,0,1,0,0],
+	[1,1,0,0,0],
+	[0,0,1,0,0],
+	[1,1,0,0,0]
+	];
+
+	var tester = new Cluster(8);
+	tester.input('a', A);
+	tester.input('a', A2);
+	tester.input('b', B);
+	tester.input('b', B2);
+	console.log(tester.isInstanceOf(A));
+	console.log(tester.isInstanceOf(B));
+</script>
 </body>
 </html>

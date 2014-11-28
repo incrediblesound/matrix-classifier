@@ -1,8 +1,12 @@
-var cluster = function(){
+var Cluster = function(resolution){
 	this.instances = {};
+	this.resolution = resolution || false;
 };
 
-cluster.prototype.input = function(label, matrix){
+Cluster.prototype.input = function(label, matrix){
+	if(this.resolution){
+		matrix = this.convertResolution(matrix);
+	}
 	// for a given input type, create a matrix of cells equal in size to the input matrix
 	this.instances[label] = this.instances[label] || this.makeCellMatrix(matrix);
 	// iterate over the matrices and input the data from each index of the input matrix into the cell
@@ -11,7 +15,10 @@ cluster.prototype.input = function(label, matrix){
 	});
 };
 
-cluster.prototype.isInstanceOf = function(matrix){
+Cluster.prototype.isInstanceOf = function(matrix){
+	if(this.resolution){
+		matrix = this.convertResolution(matrix);
+	}
 	var result = {};
 	var instanceKeys = Object.keys(this.instances);
 	forEach(instanceKeys, function(key, idx, context){
@@ -26,9 +33,9 @@ cluster.prototype.isInstanceOf = function(matrix){
 		result[key] = average(result[key]);
 	}, this);
 	return result;
-}
+};
 
-cluster.prototype.makeCellMatrix = function(matrix){
+Cluster.prototype.makeCellMatrix = function(matrix){
 	var height = matrix.length;
 	var width = matrix[0].length;
 	var result = [], row;
@@ -36,11 +43,45 @@ cluster.prototype.makeCellMatrix = function(matrix){
 		result.push(arrayOf(width, function(){ return new Cell(); }));
 	};
 	return result;
-}
+};
 
-cluster.prototype.matrixInput = function(cellMatrix, inputMatrix){
-
-}
+Cluster.prototype.convertResolution = function(matrix){
+	var size = this.resolution;
+	var height = matrix.length;
+	var width = matrix[0].length;
+	var result = makeMatrix(size, size);
+	var diffHeight = size - matrix.length;
+	// var diffWidth = size - matrix[0].length;
+	if(diffHeight < 0){
+		diffHeight = Math.abs(diffHeight);
+		for(var row = 0; row < height; row++){
+			for(var col = 0; col < width; col++){
+				var newVal = matrix[row][col];
+				var toRow = Math.floor(row/diffHeight);
+				var toCol = Math.floor(col/diffHeight);
+				result[toRow][toCol] = result[toRow][toCol] || [];
+				result[toRow][toCol].push(newVal);
+			}
+		}
+	} else {
+		diffHeight = Math.abs(diffHeight);
+		for(var row = 0; row < size; row++){
+			for(var col = 0; col < size; col++){
+				var toRow = Math.floor(row/diffHeight);
+				var toCol = Math.floor(col/diffHeight);
+				var newVal = matrix[toRow][toCol];
+				result[row][col] = result[row][col] || [];
+				result[row][col].push(newVal);
+			}
+		}
+	}
+	for(var row = 0; row < result.length; row++){
+		for(var col = 0; col < result[row].length; col++){
+			result[row][col] = average(result[row][col]);
+		}
+	}
+	return result;
+};
 
 var Cell = function(){
 	this.memory = {};
@@ -77,34 +118,6 @@ Cell.prototype.makeTable = function(){
 	}, this);
 }
 
-var A = [
-[0,0,1,0,0],
-[0,1,0,1,0],
-[1,1,1,1,1],
-[1,0,0,0,1]
-];
-
-var B = [
-[1,0,0,0,0],
-[0,0,1,0,0],
-[1,0,0,0,0],
-[0,0,1,0,0]
-];
-
-var A2 = [
-[0,0,1,0,0],
-[1,0,0,0,1],
-[1,1,1,1,1],
-[1,0,0,0,1]
-];
-
-var B2 = [
-[1,1,0,0,0],
-[0,0,1,0,0],
-[1,1,0,0,0],
-[0,0,1,0,0]
-];
-
 function forEach(array, fn, context){
 	for(var i = 0, l = array.length; i < l; i++){
 		fn(array[i], i, context);
@@ -129,9 +142,63 @@ function average(array){
 }
 
 function forMatrix(matrixA, matrixB, fn){
+	if(typeof matrixB === 'function'){
+		fn = matrixB;
+		matrixB = undefined;
+	}
 	forEach(matrixA, function (rowA, rowIdx){
 		forEach(rowA, function (cellA, cellIdx){
-			fn(cellA, matrixB[rowIdx][cellIdx]);
+			if(matrixB !== undefined){
+				fn(cellA, matrixB[rowIdx][cellIdx]);
+			} else {
+				fn(cellA);
+			}
 		})
 	})
 }
+
+
+
+
+
+
+[
+[0,0],
+[0,0]
+]
+
+[
+[0,0,0,0],
+[0,0,0,0],
+[0,0,0,0],
+[0,0,0,0]
+]
+
+
+function makeMatrix(height, width){
+	var result = [];
+	for(var i = 0; i < height; i++){
+		result.push(arrayOf(width, function(){ return }));
+	}
+	return result;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
